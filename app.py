@@ -2,7 +2,7 @@ import streamlit as st
 import openai
 
 # Set your API key (replace with env var or config in prod)
-
+openai.api_key = "YOUR_OPENAI_API_KEY"
 
 st.set_page_config(page_title="CV Tailoring App", layout="wide")
 
