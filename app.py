@@ -1,5 +1,25 @@
 import streamlit as st
 from PyPDF2 import PdfReader
+from langchain.vectorstores import FAISS
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.text_splitter import CharacterTextSplitter
+
+embedder = HuggingFaceEmbeddings()
+splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+
+def create_vectorstore(text):
+    docs = splitter.create_documents([text])
+    return FAISS.from_documents(docs, embedder)
+ 
+def extract_text_from_pdf(uploaded_file):
+    if uploaded_file is not None:
+        reader = PdfReader(uploaded_file)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() or ""
+        return text
+    return ""
+
 
 st.set_page_config(page_title="CV Tailoring App", layout="wide")
 
@@ -12,6 +32,11 @@ with st.sidebar:
     full_cv = st.file_uploader("📚 Upload Full Experience CV (PDF)", type=["pdf"])
     job_description = st.text_area("📝 Paste Job Description Here", height=300)
 
+    general_cv_extracted = extract_text_from_pdf(general_cv)
+    full_cv_extracted = extract_text_from_pdf(full_cv)
+
+    general_cv_db = create_vectorstore(general_cv)
+    
     if st.button("🔍 Tailor My CV"):
         if not job_description:
             st.warning("Please provide a job description.")

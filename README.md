@@ -53,3 +53,6 @@
 * Streamlit / (for UI)
 * Python (Backend Processing)
 * PyMuPDF / PDFKit (for ATS-friendly PDF conversion)
+
+
+pip install PyPDF2 langchain faiss-cpu sentence-transformers llama-cpp-python
