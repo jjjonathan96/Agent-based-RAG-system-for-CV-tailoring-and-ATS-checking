@@ -1,61 +1,54 @@
 import streamlit as st
-from PyPDF2 import PdfReader
-from langchain.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.text_splitter import CharacterTextSplitter
+import openai
 
-embedder = HuggingFaceEmbeddings()
-splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+# Set Streamlit page
+st.title("Job Description → Skills & Expected Experience Extractor")
+st.markdown("Paste the full job description below. I'll extract skills (for ATS) and two expected experiences!")
 
-def create_vectorstore(text):
-    docs = splitter.create_documents([text])
-    return FAISS.from_documents(docs, embedder)
- 
-def extract_text_from_pdf(uploaded_file):
-    if uploaded_file is not None:
-        reader = PdfReader(uploaded_file)
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text() or ""
-        return text
-    return ""
+# 1. API Key Input
+openai_api_key = st.text_input("Enter your OpenAI API Key", type="password")
 
+# 2. Paste Job Description
+job_description = st.text_area("Paste Full Job Description Here", height=300)
 
-st.set_page_config(page_title="CV Tailoring App", layout="wide")
+# Function to generate Skills & Work Experience
+def generate_from_jd(job_description, api_key):
+    prompt = f"""
+You are an expert career assistant.
 
-st.title("🎯 CV Tailoring with RAG")
+Given the following Full Job Description:
 
-# Sidebar options
-with st.sidebar:
-    st.header("Upload Your Documents")
-    general_cv = st.file_uploader("📄 Upload General CV (PDF)", type=["pdf"])
-    full_cv = st.file_uploader("📚 Upload Full Experience CV (PDF)", type=["pdf"])
-    job_description = st.text_area("📝 Paste Job Description Here", height=300)
+{job_description}
 
-    general_cv_extracted = extract_text_from_pdf(general_cv)
-    full_cv_extracted = extract_text_from_pdf(full_cv)
+Do the following:
+1. Extract a **short list of SKILLS** (only 1-2 words each, no long sentences). Group them if needed (example groups: 'Deep Learning and ML', 'Computer Vision','ML Frameworks','Big Data & MLOps','Cloud & DevOps' etc.). Make it clean and ATS-friendly.
+2. Write **TWO brief WORK EXPERIENCES** that the ideal candidate is expected to have (each 1-2 lines).
 
-    general_cv_db = create_vectorstore(general_cv)
-    
-    if st.button("🔍 Tailor My CV"):
-        if not job_description:
-            st.warning("Please provide a job description.")
-        else:
-            st.session_state["process"] = True
+Output exactly like this:
 
-# Main area
-if st.session_state.get("process"):
-    st.subheader("📌 Tailored CV Preview")
-    
-    # --- Example placeholders for now ---
-    st.markdown("**Summary:** Tailored summary here...")
-    st.markdown("**Experience:** Tailored experience here...")
-    st.markdown("**Skills:** Tailored skills here...")
-    
-    st.download_button("📥 Download Tailored CV (PDF)", data="PDF_DATA", file_name="Tailored_CV.pdf")
+Skills:
+- Group 1: skill1, skill2, skill3
+- Group 2: skill1, skill2
 
-    # Optional: editable form
-    with st.expander("✏️ Edit Tailored CV Before Download"):
-        edited_text = st.text_area("Make edits here...", value="Tailored CV content...")
-        st.download_button("📥 Download Edited CV", data=edited_text, file_name="Edited_Tailored_CV.txt")
+Work Experiences:
+1. [First expected experience]
+2. [Second expected experience]
+"""
 
+    openai.api_key = api_key
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.5,
+        max_tokens=500,
+    )
+    return response['choices'][0]['message']['content']
+
+# 3. Button to run
+if st.button("Extract Skills & Experience"):
+    if openai_api_key and job_description:
+        with st.spinner("Extracting, please wait..."):
+            output = generate_from_jd(job_description, openai_api_key)
+            st.markdown(output)
+    else:
+        st.error("Please enter both API key and Job Description.")
