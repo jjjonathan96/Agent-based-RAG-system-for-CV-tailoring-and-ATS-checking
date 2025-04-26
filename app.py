@@ -1,63 +1,53 @@
 import streamlit as st
 import openai
 
-# Set your API key (replace with env var or config in prod)
-openai.api_key = "YOUR_OPENAI_API_KEY"
+# Setup your OpenAI key (or use local LLM API if you have)
+openai.api_key = st.secrets["OPENAI_API_KEY"]
+def generate_skills_and_experience(company, role, expectation):
+    prompt = f"""
+You are a career expert. 
+Given the following:
 
-st.set_page_config(page_title="CV Tailoring App", layout="wide")
+About Company:
+{company}
 
-st.title("🎯 CV Tailoring with RAG")
+About Role:
+{role}
 
-# Sidebar options
-with st.sidebar:
-    st.header("Upload Your Documents")
-    general_cv = st.file_uploader("📄 Upload General CV (PDF)", type=["pdf"])
-    full_cv = st.file_uploader("📚 Upload Full Experience CV (PDF)", type=["pdf"])
-    job_description = st.text_area("📝 Paste Job Description Here", height=300)
+Role Expectation:
+{expectation}
 
-    if st.button("🔍 Tailor My CV"):
-        if not job_description:
-            st.warning("Please provide a job description.")
-        else:
-            # OpenAI call to extract job skills and 2 key experiences
-            prompt = f"""
-You are a career assistant. Given the following job description, extract:
+1. Extract a short list of grouped SKILLS (example groups: 'Deep Learning and ML', 'Cloud & DevOps', etc.).
+2. Write two brief WORK EXPERIENCES that the ideal candidate is expected to have (each 2-3 lines).
 
-1. A bullet list of required or preferred skills.
-2. Two concise and relevant work experience summaries that a candidate should highlight.
+Return in this format:
 
-Be brief and professional.
+Skills:
+- Group 1: skill1, skill2, skill3
+- Group 2: skill1, skill2
 
-Job Description:
-\"\"\"
-{job_description}
-\"\"\"
+Work Experiences:
+1. [First work experience]
+2. [Second work experience]
 """
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.5,
+    )
+    return response['choices'][0]['message']['content']
 
-            with st.spinner("Analyzing job description..."):
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.2,
-                )
-                result = response.choices[0].message.content
-                st.session_state["job_analysis"] = result
-                st.session_state["process"] = True
+# Streamlit App
+st.title("Job Skills & Experience Extractor")
 
-# Main area
-if st.session_state.get("process"):
-    st.subheader("📌 Tailored CV Preview")
+st.subheader("Enter Job Description Details")
+company = st.text_area("About Company")
+role = st.text_area("About Role")
+expectation = st.text_area("Role Expectation")
 
-    st.markdown("### 🧠 Extracted from Job Description:")
-    st.markdown(st.session_state.get("job_analysis", ""))
-
-    st.markdown("### ✨ Tailored CV Content:")
-    st.markdown("**Summary:** Tailored summary here...")
-    st.markdown("**Experience:** Tailored experience here...")
-    st.markdown("**Skills:** Tailored skills here...")
-
-    st.download_button("📥 Download Tailored CV (PDF)", data="PDF_DATA", file_name="Tailored_CV.pdf")
-
-    with st.expander("✏️ Edit Tailored CV Before Download"):
-        edited_text = st.text_area("Make edits here...", value="Tailored CV content...")
-        st.download_button("📥 Download Edited CV", data=edited_text, file_name="Edited_Tailored_CV.txt")
+if st.button("Generate Skills & Experience"):
+    if company and role and expectation:
+        output = generate_skills_and_experience(company, role, expectation)
+        st.markdown(output)
+    else:
+        st.error("Please fill in all sections!")
