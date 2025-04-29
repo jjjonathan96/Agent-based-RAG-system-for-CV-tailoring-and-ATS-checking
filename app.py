@@ -21,8 +21,8 @@ Given the following Full Job Description:
 {job_description}
 
 Do the following:
-1. Extract a **short list of SKILLS** (only 1-2 words each, no long sentences). Group them if needed (example groups: 'Deep Learning and ML', 'Computer Vision','ML Frameworks','Big Data & MLOps','Cloud & DevOps' etc.). Make it clean and ATS-friendly.
-2. Write **TWO brief WORK EXPERIENCES** that the ideal candidate is expected to have (each 1-2 lines).
+1. Extract a **short list of SKILLS** (only 1-2 words each, no long sentences).  Make it clean and ATS-friendly.
+2. Write **three brief WORK EXPERIENCES** that the ideal candidate is expected to have (each 1-2 lines) should be like star method.
 
 Output exactly like this:
 
