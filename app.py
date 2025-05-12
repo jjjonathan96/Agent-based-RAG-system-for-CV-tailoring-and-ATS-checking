@@ -22,7 +22,7 @@ Given the following Full Job Description:
 
 Do the following:
 1. Extract a **short list of SKILLS** (only 1-2 words each, no long sentences).  Make it clean and ATS-friendly.
-2. Write **three brief WORK EXPERIENCES** that the ideal candidate is expected to have (each 1-2 lines) should be like star method.
+2. Write **three brief WORK EXPERIENCES** that the ideal candidate is expected to have (each 1-2 lines) should be write in STAR method.
 
 Output exactly like this:
 
