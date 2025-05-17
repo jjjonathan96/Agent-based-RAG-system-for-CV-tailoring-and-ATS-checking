@@ -65,3 +65,4 @@ parse job description get all keywords for skills then modify general cv skills
 2. Recuirter passing
 get two important work experience from job description and then add each to my two work experience
 
+pip install streamlit langchain transformers sentencepiece pdfplumber fpdf accelerate

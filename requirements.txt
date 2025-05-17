@@ -2,3 +2,8 @@ streamlit
 pdfplumber
 fpdf
 openai==0.28
+langchain 
+transformers 
+sentencepiece 
+accelerate
+langchain-community
