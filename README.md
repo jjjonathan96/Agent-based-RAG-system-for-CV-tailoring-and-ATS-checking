@@ -53,3 +53,15 @@
 * Streamlit / (for UI)
 * Python (Backend Processing)
 * PyMuPDF / PDFKit (for ATS-friendly PDF conversion)
+
+
+
+BASIC algorithm
+
+1. ATS passing
+
+parse job description get all keywords for skills then modify general cv skills
+
+2. Recuirter passing
+get two important work experience from job description and then add each to my two work experience
+
