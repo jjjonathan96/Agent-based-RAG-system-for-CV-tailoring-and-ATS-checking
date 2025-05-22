@@ -1,4 +1,6 @@
 streamlit
 pdfplumber
 fpdf
+weasyprint
+jinja2
 openai==0.28

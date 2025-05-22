@@ -65,3 +65,4 @@ parse job description get all keywords for skills then modify general cv skills
 2. Recuirter passing
 get two important work experience from job description and then add each to my two work experience
 
+sudo apt install libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libcairo2
