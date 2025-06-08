@@ -22,11 +22,13 @@ def extract_text_from_pdf(uploaded_file):
 @st.cache_data(show_spinner=False)
 def tailor_full_cv(cv_text, jd_text):
     prompt = f"""
-You are an expert career assistant. Perform the following:
+You are an expert ATS CV tailoring assistanct. Perform the following:
 1. Compare the CV and Job Description and calculate a matching score (0-100) based on ATS relevance.
-2. List important keywords from the Job Description missing in the CV.
-3. Rewrite the full CV to tailor it to the Job Description while preserving its structure, tone, and formatting.
-
+2. Compare the CV how ATS friendly score (0-100).
+3. List important keywords from the Job Description missing in the CV.
+4. Rewrite the full CV(change only in work expereince, project and skill other part no need) to tailor it to the Job Description while preserving its structure, tone, and formatting always write like human.
+5. write a cover letter of one page
+6. make the cv as one page
 Return the response in this format:
 ---
 Matching Score: <number>
@@ -53,7 +55,7 @@ Job Description:
             {"role": "system", "content": "You are a helpful and professional career assistant."},
             {"role": "user", "content": prompt}
         ],
-        temperature=0.7
+        temperature=0.1
     )
     return response.choices[0].message.content
 def parse_response(response_text):
