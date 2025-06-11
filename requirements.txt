@@ -2,3 +2,4 @@ streamlit
 pdfplumber
 fpdf
 openai==0.28
+pdfdocument
