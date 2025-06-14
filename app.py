@@ -74,8 +74,8 @@ def parse_response(response_text):
     tailored_cv = tailored_cv_block.group(1).strip() if tailored_cv_block else ""
 
     cover_letter_block = re.search(r"Cover Letter:\s*(.*)", response_text, re.DOTALL)
-    cover_letter = cover_letter_block.group(1).strip() if cover_letter_block else ""
-
+    cover_letter_temp = cover_letter_block.group(1).strip() if cover_letter_block else ""
+    cover_letter = " ".join(cover_letter_temp.split('?'))
     return score, missing_keywords, tailored_cv, cover_letter
 
 # --- Improve Skills Section ---
@@ -93,6 +93,22 @@ def add_missing_keywords_to_skills(cv_text, missing_keywords):
         return skills_section_pattern.sub(replacer, cv_text)
     else:
         return cv_text.strip() + "\n\nSkills:\n" + ", ".join(sorted(set(missing_keywords))) + "\n"
+# clean unicode
+def clean_text_for_pdf(text):
+    replacements = {
+        "—": "-",
+        "–": "-",
+        "“": "\"",
+        "”": "\"",
+        "’": "'",
+        "•": "-",
+        "…": "...",
+        "\u2013": "-",  # en dash
+        "\u2014": "-",  # em dash
+    }
+    for orig, repl in replacements.items():
+        text = text.replace(orig, repl)
+    return text
 
 # --- Create PDF from Text ---
 def convert_text_to_pdf(text):
@@ -101,13 +117,57 @@ def convert_text_to_pdf(text):
     pdf.set_auto_page_break(auto=True, margin=10)
     pdf.set_font("Arial", size=11)
     line_height = pdf.font_size * 2
-
+    text = clean_text_for_pdf(text)
     for line in text.split('\n'):
         safe_line = line.encode('latin-1', 'replace').decode('latin-1')
         pdf.multi_cell(0, line_height, safe_line)
     temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
     pdf.output(temp_pdf.name)
     return temp_pdf.name
+
+def convert_text_to_pdf_one_page(text):
+    pdf = FPDF(format='A4')
+    pdf.add_page()
+    pdf.set_margins(10, 10, 10)
+    pdf.set_auto_page_break(auto=False)  # no page breaks
+
+    pdf.set_font("Arial", size=10)
+    line_height = pdf.font_size * 1.5
+    max_height = 277  # approx usable height on A4 in mm (297 - margins)
+
+    y_start = pdf.get_y()
+    height_used = 0
+
+    lines = text.split('\n')
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            # small vertical gap for empty lines
+            height_used += line_height * 0.5
+            if height_used > max_height:
+                break
+            pdf.ln(line_height * 0.5)
+            continue
+
+        # Detect section headings (simple heuristic: all uppercase or ends with ':')
+        if line.isupper() or line.endswith(":"):
+            pdf.set_font("Arial", "B", 10)
+        else:
+            pdf.set_font("Arial", size=10)
+
+        # Estimate if this line fits
+        if height_used + line_height > max_height:
+            break
+
+        # Write the line with wrapping
+        pdf.multi_cell(0, line_height, line)
+        height_used += line_height
+
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    pdf.output(temp_file.name)
+    return temp_file.name
+
 
 # --- Session Setup ---
 if "parsed_cv" not in st.session_state:
@@ -152,7 +212,8 @@ if st.session_state["tailored_cv"]:
 
     st.subheader("📄 Tailored CV")
     st.text_area("Tailored CV Preview", value=st.session_state["tailored_cv"], height=500)
-    pdf_cv = convert_text_to_pdf(st.session_state["tailored_cv"])
+    #pdf_cv = convert_text_to_pdf(st.session_state["tailored_cv"])
+    pdf_cv = convert_text_to_pdf_one_page(clean_text_for_pdf(st.session_state["tailored_cv"]))
     with open(pdf_cv, "rb") as f:
         st.download_button("⬇️ Download Tailored CV (PDF)", f.read(), file_name="tailored_cv.pdf", mime="application/pdf")
 
