@@ -105,10 +105,18 @@ def clean_text_for_pdf(text):
         "…": "...",
         "\u2013": "-",  # en dash
         "\u2014": "-",  # em dash
+        "\u2003": " ",  # em space ← ADD THIS LINE
+        "\u2002": " ",  # en space (optional)
+        "\u2009":" ",
+        "\u200a":" ",
+        "\u2502":" ",
+        "\u2010":" ",
+        "\u00a0": " ",  # non-breaking space (optional)
     }
     for orig, repl in replacements.items():
         text = text.replace(orig, repl)
     return text
+
 
 # --- Create PDF from Text ---
 def convert_text_to_pdf(text):
@@ -192,7 +200,7 @@ else:
         st.experimental_rerun()
 
 # --- Job Description Input ---
-jd_input = st.text_area("Paste the Job Description here")
+jd_input = st.text_area("Paste the Job Description here",height=500)
 
 # --- Tailor Button ---
 if st.button("✨ Tailor My CV & Cover Letter") and st.session_state["parsed_cv"] and jd_input:
