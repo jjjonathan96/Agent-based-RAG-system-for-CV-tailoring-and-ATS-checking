@@ -22,6 +22,7 @@ load_dotenv()
 MONGO_URI = os.getenv("MONGO_URI")
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 model=os.getenv("MODEL")
+open_ai_key = os.getenv("OPENAI_API_KEY")
 # --- Stripe Setup ---
 stripe.api_key = STRIPE_SECRET_KEY
 
@@ -261,7 +262,8 @@ def login():
 # --- Main App ---
 def main_app():
     st.title("🤖 AI CV + Cover Letter Tailoring Tool")
-    openai.api_key = st.text_input("Enter your OpenAI API Key", type="password")
+    #openai.api_key = st.text_input("Enter your OpenAI API Key", type="password")
+    openai.api_key = open_ai_key
 
     user_id = str(st.session_state.user["_id"])
     coin_balance = get_coin_balance(user_id)
