@@ -3,3 +3,8 @@ pdfplumber
 fpdf
 openai==0.28
 pdfdocument
+python-dotenv
+requests
+pymongo
+beautifulsoup4
+selenium
