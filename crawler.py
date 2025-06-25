@@ -1,44 +1,40 @@
-import requests
-from bs4 import BeautifulSoup
-def extract_jobs(url, use_selenium=False):
-    if use_selenium:
-        from selenium import webdriver
-        from selenium.webdriver.chrome.options import Options
-        from selenium.webdriver.common.by import By
-        import time
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+import time
 
-        def init_driver():
-            options = Options()
-            options.add_argument("--headless")
-            return webdriver.Chrome(options=options)
 
-        jobs = []
-        try:
-            driver = init_driver()
-            driver.get(url)
-            time.sleep(5)
-            links = driver.find_elements(By.TAG_NAME, "a")
-            for link in links:
-                text = link.text.strip()
-                if any(k in text.lower() for k in ['engineer', 'data', 'ai', 'ml', 'developer', 'scientist']):
-                    jobs.append(text)
-        except Exception as e:
-            jobs = [f"Selenium Error: {str(e)}"]
-        finally:
-            driver.quit()
-        return list(set(jobs))
+def extract_linkedin_jobs(job="Data Scientist", location="London"):
+    url = f"https://www.linkedin.com/jobs/search/?keywords={job}&location={location}"
 
-    # Fallback to Requests
+    options = Options()
+    options.add_argument("--headless=new")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=options)
+
     jobs = []
     try:
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(response.content, 'html.parser')
-        for link in soup.find_all('a'):
-            text = link.get_text(strip=True)
-            if any(k in text.lower() for k in ['engineer', 'data', 'ai', 'ml', 'developer', 'scientist']):
-                jobs.append(text)
-    except Exception as e:
-        jobs = [f"Requests Error: {str(e)}"]
+        driver.get(url)
+        time.sleep(5)  # Wait for page to load
 
-    return list(set(jobs))
+        job_cards = driver.find_elements(By.CLASS_NAME, 'job-card-list__title')
+
+        for card in job_cards:
+            title = card.text.strip()
+            link = card.get_attribute('href')
+            if title and link:
+                jobs.append((title, link))
+
+    except Exception as e:
+        jobs.append((f"Error: {str(e)}", ""))
+    finally:
+        driver.quit()
+
+    return jobs

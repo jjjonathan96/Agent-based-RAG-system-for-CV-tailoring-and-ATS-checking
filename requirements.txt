@@ -1,10 +1,7 @@
-streamlit
-pdfplumber
-fpdf
 openai==0.28
-pdfdocument
-python-dotenv
-requests
-pymongo
+streamlit
+openai
+langchain
 beautifulsoup4
-selenium
+requests
+python-dotenv
