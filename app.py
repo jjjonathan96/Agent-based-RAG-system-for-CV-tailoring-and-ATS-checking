@@ -12,8 +12,8 @@ st.set_page_config(page_title="AI CV Tailoring", layout="wide")
 st.title("🤖 AI CV + Cover Letter Tailoring Tool")
 
 # --- API Key Input ---
-openai.api_key = st.text_input("Enter your OpenAI API Key", type="password")
-#openai.api_key = st.secrets["OPENAI_API_KEY"]
+#openai.api_key = st.text_input("Enter your OpenAI API Key", type="password")
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 # --- Extract PDF Text ---
 def extract_text_from_pdf(uploaded_file):
     with pdfplumber.open(uploaded_file) as pdf:
